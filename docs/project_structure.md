@@ -30,3 +30,5 @@ python3 -m venv .venv
 `download_data.py` uses cached files by default. Add `--force` when you want to refresh all raw files from the official sources.
 
 The first analysis script writes `data/processed/housing_risk_indicators.csv`, a short summary text file, and chart images in `outputs/figures/`.
+
+See `docs/methodology.md` for the mortgage formulas, risk thresholds, assumptions, and current limitations.

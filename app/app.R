@@ -5,19 +5,29 @@ Sys.setenv(R_USER_CACHE_DIR = local_cache_dir, XDG_CACHE_HOME = local_cache_dir)
 library(shiny)
 library(bslib)
 
-candidate_roots <- unique(normalizePath(c(getwd(), file.path(getwd(), "..")), mustWork = FALSE))
-project_root <- candidate_roots[
-  file.exists(file.path(candidate_roots, "data", "processed", "housing_risk_indicators.csv"))
-][1]
-if (is.na(project_root)) {
-  stop("Could not find data/processed/housing_risk_indicators.csv from the current working directory.")
+candidate_data_paths <- unique(normalizePath(
+  c(
+    file.path(getwd(), "data", "housing_risk_indicators.csv"),
+    file.path(getwd(), "data", "processed", "housing_risk_indicators.csv"),
+    file.path(getwd(), "..", "data", "processed", "housing_risk_indicators.csv")
+  ),
+  mustWork = FALSE
+))
+data_path <- candidate_data_paths[file.exists(candidate_data_paths)][1]
+if (is.na(data_path)) {
+  stop(
+    paste(
+      "Could not find housing_risk_indicators.csv. Checked:",
+      paste(candidate_data_paths, collapse = ", ")
+    )
+  )
 }
 
-data_path <- file.path(project_root, "data", "processed", "housing_risk_indicators.csv")
 risk_data <- read.csv(data_path, stringsAsFactors = FALSE)
 risk_data$date <- as.Date(risk_data$date)
 risk_data <- risk_data[order(risk_data$date), ]
 latest_row <- risk_data[which.max(risk_data$date), ]
+data_range_label <- paste0(min(risk_data$month), " to ", max(risk_data$month))
 
 currency <- function(x) {
   sign <- ifelse(x < 0, "-$", "$")
@@ -61,6 +71,39 @@ risk_class <- function(level) {
   )
 }
 
+market_context <- function(row) {
+  paste(
+    "As of", row$month,
+    "the Canada home-price proxy is", currency(row$proxy_home_price_canada_cad),
+    "and the CMHC 5-year conventional mortgage rate is",
+    paste0(percent(row$cmhc_5yr_conventional_mortgage_rate_percent, 2), "."),
+    "The implied monthly payment is", currency(row$monthly_mortgage_payment_canada_cad),
+    "or", paste0(percent(row$payment_to_income_percent), " of monthly after-tax income,"),
+    "which places the baseline affordability proxy in", paste0(row$risk_level, ".")
+  )
+}
+
+shock_context <- function(row) {
+  paste(
+    "Under a +2 percentage point rate shock, the payment-to-income ratio rises to",
+    paste0(percent(row$payment_to_income_plus_2_0pp_percent), ","),
+    "with the risk classification at", paste0(row$risk_level_plus_2_0pp, "."),
+    "This calculator is a rule-based affordability measure, not a loan approval or price forecast model."
+  )
+}
+
+historical_context <- function(df, row) {
+  highest <- df[which.max(df$payment_to_income_percent), ]
+  lowest <- df[which.min(df$payment_to_income_percent), ]
+  paste(
+    "Across the historical proxy series, the highest baseline burden is",
+    percent(highest$payment_to_income_percent), "in", paste0(highest$month, ","),
+    "while the lowest is", percent(lowest$payment_to_income_percent), "in", paste0(lowest$month, "."),
+    "The latest complete month is", row$month,
+    "at", paste0(percent(row$payment_to_income_percent), ".")
+  )
+}
+
 metric_card <- function(label, value, caption = NULL, class = "") {
   div(
     class = paste("metric-card", class),
@@ -70,9 +113,24 @@ metric_card <- function(label, value, caption = NULL, class = "") {
   )
 }
 
+status_pill <- function(label, value, class = "") {
+  div(
+    class = paste("status-pill", class),
+    span(label),
+    strong(value)
+  )
+}
+
 plot_line <- function(df, columns, labels, colors, y_label, main) {
   y_values <- unlist(df[columns], use.names = FALSE)
   y_limits <- range(y_values[is.finite(y_values)], na.rm = TRUE)
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
+  par(
+    bg = "#ffffff",
+    mar = c(4.2, 4.4, 3.2, 1.2),
+    family = "sans"
+  )
   plot(
     df$date,
     df[[columns[1]]],
@@ -87,9 +145,12 @@ plot_line <- function(df, columns, labels, colors, y_label, main) {
     bty = "n",
     cex.main = 1.05,
     cex.lab = 0.9,
-    cex.axis = 0.85
+    cex.axis = 0.85,
+    col.axis = "#5b6778",
+    col.lab = "#4b5565",
+    col.main = "#172033"
   )
-  grid(col = "#e7edf3", lty = 1)
+  grid(col = "#e8eef5", lty = 1)
   for (i in seq_along(columns)) {
     lines(df$date, df[[columns[i]]], lwd = 2.6, col = colors[i])
   }
@@ -108,91 +169,128 @@ ui <- page_navbar(
   theme = bs_theme(
     version = 5,
     bootswatch = "flatly",
-    primary = "#22577a"
+    primary = "#285f7a"
   ),
   header = tags$head(
     tags$style(HTML("
+      :root {
+        --ink: #172033;
+        --muted: #5b6778;
+        --line: #d9e3ee;
+        --panel: #ffffff;
+        --page: #f3f7fb;
+        --brand: #285f7a;
+        --brand-dark: #19364c;
+        --accent: #2f9f8f;
+        --warning: #b7791f;
+        --danger: #b42318;
+      }
       body {
-        background: #f6f8fb;
-        color: #1d2733;
+        background:
+          radial-gradient(circle at top left, rgba(47, 159, 143, 0.12), transparent 28rem),
+          linear-gradient(180deg, #eef5fa 0, var(--page) 18rem, #f7f9fc 100%);
+        color: var(--ink);
         font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       }
       .navbar {
-        border-bottom: 1px solid #dce4ed;
-        box-shadow: 0 1px 8px rgba(25, 42, 62, 0.05);
+        background: linear-gradient(90deg, #19364c 0%, #285f7a 58%, #2f9f8f 100%) !important;
+        border-bottom: 1px solid rgba(255,255,255,0.18);
+        box-shadow: 0 10px 28px rgba(25, 42, 62, 0.18);
+      }
+      .navbar-brand, .navbar .nav-link {
+        color: rgba(255,255,255,0.92) !important;
+      }
+      .navbar .nav-link.active {
+        color: #ffffff !important;
+        font-weight: 800;
       }
       .page-wrap {
-        max-width: 1280px;
+        max-width: 1320px;
         margin: 0 auto;
-        padding: 22px 18px 36px;
+        padding: 26px 22px 42px;
       }
       .section-title {
         display: flex;
         justify-content: space-between;
         gap: 16px;
         align-items: flex-end;
-        margin: 4px 0 18px;
+        margin: 6px 0 18px;
       }
       .section-title h2 {
-        font-size: 1.45rem;
+        font-size: 1.7rem;
         margin: 0;
         letter-spacing: 0;
+        font-weight: 850;
       }
       .section-title p {
-        margin: 4px 0 0;
-        color: #64748b;
+        margin: 6px 0 0;
+        color: var(--muted);
         max-width: 760px;
+        font-size: 1.02rem;
       }
       .metric-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 16px;
+        gap: 14px;
+        margin-bottom: 18px;
       }
       .metric-card, .panel {
-        background: #ffffff;
-        border: 1px solid #dce4ed;
-        border-radius: 8px;
-        box-shadow: 0 6px 18px rgba(31, 44, 60, 0.05);
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: 0 14px 34px rgba(31, 44, 60, 0.08);
       }
       .metric-card {
-        padding: 16px;
-        min-height: 118px;
+        padding: 18px 18px 16px;
+        min-height: 124px;
+        position: relative;
+        overflow: hidden;
+      }
+      .metric-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--accent);
       }
       .metric-label {
         display: block;
-        color: #64748b;
+        color: var(--muted);
         font-size: 0.82rem;
         font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
       .metric-value {
-        font-size: 1.55rem;
+        font-size: 1.75rem;
         font-weight: 800;
         margin-top: 8px;
         line-height: 1.1;
       }
       .metric-caption {
-        color: #64748b;
+        color: var(--muted);
         font-size: 0.88rem;
         margin-top: 8px;
       }
       .risk-low .metric-value, .risk-low-text { color: #1b7f5a; }
-      .risk-medium .metric-value, .risk-medium-text { color: #9a6a00; }
-      .risk-high .metric-value, .risk-high-text { color: #b42318; }
+      .risk-medium .metric-value, .risk-medium-text { color: var(--warning); }
+      .risk-high .metric-value, .risk-high-text { color: var(--danger); }
+      .risk-high::before { background: var(--danger); }
       .panel {
-        padding: 18px;
-        margin-bottom: 14px;
+        padding: 20px;
+        margin-bottom: 16px;
       }
       .chart-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
+        gap: 16px;
       }
       .calculator-layout {
         display: grid;
         grid-template-columns: 360px minmax(0, 1fr);
-        gap: 14px;
+        gap: 16px;
         align-items: start;
       }
       .form-panel .form-group {
@@ -201,28 +299,107 @@ ui <- page_navbar(
       .result-band {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+      .table-wrap {
+        overflow-x: auto;
       }
       table {
         width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
       }
       table td, table th {
         vertical-align: middle;
+        padding: 11px 12px !important;
+        border-color: #e3eaf2 !important;
       }
       table td:last-child, table th:last-child {
         white-space: nowrap;
+      }
+      table th {
+        color: #243145;
+        font-weight: 800;
+        background: #f8fbfe;
       }
       .table {
         margin-bottom: 0;
       }
       .note {
-        color: #64748b;
+        color: var(--muted);
         font-size: 0.9rem;
         margin-top: 8px;
       }
+      .insight-panel {
+        border-left: 5px solid var(--brand);
+        background: linear-gradient(90deg, rgba(40, 95, 122, 0.06), rgba(255, 255, 255, 0.98) 42%);
+      }
+      .insight-panel h3 {
+        font-size: 1.05rem;
+        margin: 0 0 10px;
+        font-weight: 850;
+      }
+      .insight-panel p {
+        color: #425066;
+        margin: 0 0 8px;
+        line-height: 1.55;
+      }
+      .status-strip {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 11px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.86rem;
+        box-shadow: 0 8px 20px rgba(31, 44, 60, 0.05);
+      }
+      .status-pill strong {
+        color: var(--ink);
+      }
+      .status-pill.risk-high strong {
+        color: var(--danger);
+      }
+      .method-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .method-list div {
+        background: #f8fbfe;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 14px;
+        color: #425066;
+        font-size: 0.92rem;
+      }
+      .form-control, .selectize-input {
+        border-color: #d6e1eb;
+        border-radius: 8px;
+      }
+      .irs--shiny .irs-bar,
+      .irs--shiny .irs-single {
+        background: var(--brand);
+        border-color: var(--brand);
+      }
+      .irs--shiny .irs-handle {
+        border-color: var(--brand);
+      }
+      .shiny-plot-output img {
+        width: 100%;
+      }
       @media (max-width: 980px) {
-        .metric-grid, .chart-grid, .calculator-layout, .result-band {
+        .metric-grid, .chart-grid, .calculator-layout, .result-band, .method-list {
           grid-template-columns: 1fr;
         }
         .section-title {
@@ -245,6 +422,12 @@ ui <- page_navbar(
         div(class = "note", paste("Latest complete month:", latest_row$month))
       ),
       div(
+        class = "status-strip",
+        status_pill("Data range", data_range_label),
+        status_pill("Latest month", latest_row$month),
+        status_pill("Current risk", latest_row$risk_level, risk_class(latest_row$risk_level))
+      ),
+      div(
         class = "metric-grid",
         metric_card("Proxy Canada Home Price", currency(latest_row$proxy_home_price_canada_cad), "Indexed to Dec. 2016 = 100"),
         metric_card("5-Year Mortgage Rate", percent(latest_row$cmhc_5yr_conventional_mortgage_rate_percent, 2), "CMHC conventional rate"),
@@ -252,11 +435,18 @@ ui <- page_navbar(
         metric_card("Risk Level", latest_row$risk_level, "+2pp scenario remains visible in Historical Risk", risk_class(latest_row$risk_level))
       ),
       div(
+        class = "panel insight-panel",
+        h3("Automated Interpretation"),
+        p(market_context(latest_row)),
+        p(shock_context(latest_row)),
+        p(historical_context(risk_data, latest_row))
+      ),
+      div(
         class = "chart-grid",
-        div(class = "panel", plotOutput("price_plot", height = 310)),
-        div(class = "panel", plotOutput("rate_plot", height = 310)),
-        div(class = "panel", plotOutput("macro_plot", height = 310)),
-        div(class = "panel", plotOutput("burden_plot", height = 310))
+        div(class = "panel", plotOutput("price_plot", height = 320)),
+        div(class = "panel", plotOutput("rate_plot", height = 320)),
+        div(class = "panel", plotOutput("macro_plot", height = 320)),
+        div(class = "panel", plotOutput("burden_plot", height = 320))
       )
     )
   ),
@@ -291,7 +481,8 @@ ui <- page_navbar(
           div(
             class = "panel",
             h4("Rate Shock Scenarios"),
-            tableOutput("shock_table"),
+            div(class = "table-wrap", tableOutput("shock_table")),
+            uiOutput("calc_interpretation"),
             div(class = "note", "Risk bands use monthly mortgage payment divided by monthly after-tax income: Low < 30%, Medium 30-40%, High > 40%.")
           )
         )
@@ -306,8 +497,9 @@ ui <- page_navbar(
         class = "section-title",
         div(
           h2("Historical Risk Monitor"),
-          p("The historical series shows how the project’s affordability proxy changes when rates and prices move through time.")
-        )
+          p("The historical series shows how the project's affordability proxy changes when rates and prices move through time.")
+        ),
+        div(class = "note", paste("Full history:", data_range_label))
       ),
       div(
         class = "metric-grid",
@@ -317,7 +509,18 @@ ui <- page_navbar(
         uiOutput("latest_price_income_card")
       ),
       div(class = "panel", plotOutput("historical_risk_plot", height = 390)),
-      div(class = "panel", h4("Recent Months"), tableOutput("recent_table"))
+      div(
+        class = "panel insight-panel",
+        h3("Historical Reading"),
+        p(historical_context(risk_data, latest_row)),
+        p("The historical risk proxy combines housing price index movement, mortgage rates, and income data into a comparable monthly burden series. CPI, unemployment, and policy rates provide macro context rather than directly determining the household risk score.")
+      ),
+      div(
+        class = "panel",
+        h4("Latest 8 Complete Months"),
+        div(class = "note", paste("Full dashboard-ready history runs from", data_range_label, ". Use the Data tab to inspect earlier records.")),
+        div(class = "table-wrap", tableOutput("recent_table"))
+      )
     )
   ),
   nav_panel(
@@ -331,7 +534,41 @@ ui <- page_navbar(
           p("This table previews the processed indicators that power the dashboard.")
         )
       ),
-      div(class = "panel", tableOutput("data_preview"))
+      div(
+        class = "panel",
+        h4("Method Notes"),
+        div(
+          class = "method-list",
+          div("Monthly payment uses the standard fixed-rate mortgage amortization formula."),
+          div("Historical home prices are index-based proxies, not observed transaction prices."),
+          div("Risk levels are rule-based affordability bands, not bank underwriting decisions.")
+        ),
+        br(),
+        div(
+          class = "calculator-layout",
+          div(
+            dateRangeInput(
+              "history_dates",
+              "Month range",
+              start = min(risk_data$date),
+              end = max(risk_data$date),
+              min = min(risk_data$date),
+              max = max(risk_data$date),
+              format = "yyyy-mm"
+            )
+          )
+        ),
+        uiOutput("data_filter_summary"),
+        div(class = "table-wrap", tableOutput("data_preview")),
+        div(
+          class = "note",
+          paste(
+            "Full dashboard-ready history:",
+            paste0(data_range_label, "."),
+            "The current proxy risk classification is High Risk for all months because the lowest historical payment-to-income ratio is still above the 40% threshold."
+          )
+        )
+      )
     )
   )
 )
@@ -429,6 +666,24 @@ server <- function(input, output, session) {
     )
   }, striped = TRUE, bordered = FALSE, spacing = "s")
 
+  output$calc_interpretation <- renderUI({
+    value <- calc()
+    plus_two_rate <- input$interest_rate + 2
+    plus_two_payment <- monthly_payment(value$principal, plus_two_rate, input$amortization)
+    plus_two_ratio <- plus_two_payment / value$monthly_income * 100
+    div(
+      class = "note",
+      paste(
+        "For the current inputs, the baseline monthly payment is",
+        paste0(currency(value$payment), ","),
+        "or", paste0(percent(value$ratio), " of monthly after-tax income."),
+        "At a +2pp rate shock, the payment rises to",
+        paste0(currency(plus_two_payment), ","),
+        "or", paste0(percent(plus_two_ratio), ".")
+      )
+    )
+  })
+
   output$highest_burden_card <- renderUI({
     row <- risk_data[which.max(risk_data$payment_to_income_percent), ]
     metric_card("Highest Burden", percent(row$payment_to_income_percent), row$month, "risk-high")
@@ -474,8 +729,43 @@ server <- function(input, output, session) {
     )
   }, striped = TRUE, bordered = FALSE, spacing = "s")
 
+  filtered_history <- reactive({
+    df <- risk_data
+    if (!is.null(input$history_dates) && all(!is.na(input$history_dates))) {
+      df <- df[df$date >= input$history_dates[1] & df$date <= input$history_dates[2], ]
+    }
+    df
+  })
+
+  output$data_filter_summary <- renderUI({
+    df <- filtered_history()
+    if (nrow(df) == 0) {
+      return(div(class = "note", "No records match the selected month range."))
+    }
+    div(
+      class = "note",
+      paste(
+        "Showing",
+        nrow(df),
+        "monthly records from",
+        min(df$month),
+        "to",
+        paste0(max(df$month), ".")
+      )
+    )
+  })
+
   output$data_preview <- renderTable({
-    preview <- tail(risk_data, 12)
+    preview <- filtered_history()
+    if (nrow(preview) == 0) {
+      return(data.frame(
+        Message = paste(
+          "No records match the selected filters.",
+          "In the current proxy model, the full historical series may not contain every risk level."
+        ),
+        check.names = FALSE
+      ))
+    }
     data.frame(
       Month = preview$month,
       `Home Price Proxy` = currency(preview$proxy_home_price_canada_cad),
