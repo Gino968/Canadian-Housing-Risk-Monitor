@@ -1,6 +1,9 @@
 # Canadian-Housing-Risk-Monitor
 Canadian Housing Risk Monitor is an interactive analytics platform that uses Canadian housing and economic data to analyze mortgage affordability, housing market trends, and interest-rate risk through statistical modelling, scenario simulation, and data visualization.
 
+## Live Demo
+**Interactive dashboard:** [Canadian Housing Risk Monitor](https://ginoli.shinyapps.io/canadian-housing-risk-monitor/)
+
 ## Dashboard Features
 
 - Market overview with housing price indexes, mortgage rates, policy rates, CPI inflation, unemployment, and affordability pressure
