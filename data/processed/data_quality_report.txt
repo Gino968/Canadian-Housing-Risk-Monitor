@@ -1,0 +1,30 @@
+Canadian Housing Risk Monitor data quality report
+Generated at: 2026-05-19T20:57:28
+
+Dataset ranges:
+- cpi_canada: 1,348 rows, 1914-01 to 2026-04
+- unemployment_canada: 604 rows, 1976-01 to 2026-04
+- housing_price_indexes: 544 rows, 1981-01 to 2026-04
+- mortgage_rate_canada: 904 rows, 1951-01 to 2026-04
+- policy_rate_canada: 206 rows, 2009-04 to 2026-05
+- income_canada: 49 rows, 1976 to 2024
+
+Master dataset:
+- Rows: 545
+- Range: 1981-01 to 2026-05
+- Duplicate months: 0
+
+Missing values by master column:
+- boc_policy_rate_monthly_average_percent: 339
+- boc_policy_rate_month_end_percent: 339
+- new_housing_price_index_canada_yoy_percent: 13
+- new_housing_price_index_toronto_yoy_percent: 13
+- cpi_all_items_index_2002_100: 1
+- cpi_inflation_yoy_percent: 1
+- unemployment_rate_percent: 1
+- new_housing_price_index_canada_201612_100: 1
+- new_housing_price_index_toronto_201612_100: 1
+- cmhc_5yr_conventional_mortgage_rate_percent: 1
+- month: 0
+- income_reference_year: 0
+- median_after_tax_income_cad_annual: 0

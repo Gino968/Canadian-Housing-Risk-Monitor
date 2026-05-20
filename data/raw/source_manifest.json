@@ -1,0 +1,68 @@
+[
+  {
+    "id": "statcan_cpi_18100004",
+    "title": "Statistics Canada Table 18-10-0004-01, Consumer Price Index",
+    "url": "https://www150.statcan.gc.ca/n1/tbl/csv/18100004-eng.zip",
+    "filename": "statcan_18100004_cpi.zip",
+    "local_path": "data/raw/statcan_18100004_cpi.zip",
+    "status": "downloaded",
+    "downloaded_at": "2026-05-20T00:56:02Z",
+    "checked_at": "2026-05-20T00:56:02Z",
+    "bytes": 15193654
+  },
+  {
+    "id": "statcan_unemployment_14100287",
+    "title": "Statistics Canada Table 14-10-0287-01, Labour force characteristics",
+    "url": "https://www150.statcan.gc.ca/n1/tbl/csv/14100287-eng.zip",
+    "filename": "statcan_14100287_labour_force.zip",
+    "local_path": "data/raw/statcan_14100287_labour_force.zip",
+    "status": "downloaded",
+    "downloaded_at": "2026-05-20T00:56:13Z",
+    "checked_at": "2026-05-20T00:56:13Z",
+    "bytes": 60026421
+  },
+  {
+    "id": "statcan_new_housing_price_18100205",
+    "title": "Statistics Canada Table 18-10-0205-01, New housing price index",
+    "url": "https://www150.statcan.gc.ca/n1/tbl/csv/18100205-eng.zip",
+    "filename": "statcan_18100205_new_housing_price_index.zip",
+    "local_path": "data/raw/statcan_18100205_new_housing_price_index.zip",
+    "status": "downloaded",
+    "downloaded_at": "2026-05-20T00:56:13Z",
+    "checked_at": "2026-05-20T00:56:13Z",
+    "bytes": 353167
+  },
+  {
+    "id": "statcan_mortgage_rate_34100145",
+    "title": "Statistics Canada Table 34-10-0145-01, CMHC conventional mortgage lending rate, 5-year term",
+    "url": "https://www150.statcan.gc.ca/n1/tbl/csv/34100145-eng.zip",
+    "filename": "statcan_34100145_cmhc_5yr_mortgage_rate.zip",
+    "local_path": "data/raw/statcan_34100145_cmhc_5yr_mortgage_rate.zip",
+    "status": "downloaded",
+    "downloaded_at": "2026-05-20T00:56:13Z",
+    "checked_at": "2026-05-20T00:56:13Z",
+    "bytes": 6498
+  },
+  {
+    "id": "statcan_income_11100190",
+    "title": "Statistics Canada Table 11-10-0190-01, Market, total and after-tax income",
+    "url": "https://www150.statcan.gc.ca/n1/tbl/csv/11100190-eng.zip",
+    "filename": "statcan_11100190_income.zip",
+    "local_path": "data/raw/statcan_11100190_income.zip",
+    "status": "downloaded",
+    "downloaded_at": "2026-05-20T00:56:14Z",
+    "checked_at": "2026-05-20T00:56:14Z",
+    "bytes": 3264030
+  },
+  {
+    "id": "boc_policy_rate_v39079",
+    "title": "Bank of Canada Valet API, target for the overnight rate",
+    "url": "https://www.bankofcanada.ca/valet/observations/V39079/csv?start_date=2000-01-01",
+    "filename": "bank_of_canada_v39079_policy_rate.csv",
+    "local_path": "data/raw/bank_of_canada_v39079_policy_rate.csv",
+    "status": "downloaded",
+    "downloaded_at": "2026-05-20T00:56:14Z",
+    "checked_at": "2026-05-20T00:56:14Z",
+    "bytes": 93452
+  }
+]

@@ -256,13 +256,7 @@ Complete the portfolio-ready project with:
 - Deployment
 - Technical documentation
 
-## Resume Description
-
-Built an interactive Canadian housing and interest-rate risk dashboard using Python and R Shiny to analyze mortgage affordability, simulate rate-change scenarios, and model housing market risk using macroeconomic and real estate data.
-
 ## Project Value
-
-This project is stronger than a basic housing price prediction project because it combines:
 
 - Risk analytics
 - Economic interpretation
@@ -270,4 +264,4 @@ This project is stronger than a basic housing price prediction project because i
 - Interactive dashboard design
 - Portfolio-ready software organization
 
-It presents housing analysis as a practical decision-support product rather than only a prediction exercise.
+
