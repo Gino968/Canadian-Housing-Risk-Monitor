@@ -10,7 +10,7 @@ scripts/
   data_cleaning/    Data cleaning and merge scripts
   analysis/         Affordability indicators, EDA figures, and modelling helpers
 notebooks/        Exploratory analysis notebooks
-app/              Future R Shiny application
+app/              R Shiny dashboard application
 docs/             Project documentation
 outputs/
   figures/        Exported charts

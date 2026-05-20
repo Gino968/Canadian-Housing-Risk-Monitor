@@ -73,4 +73,20 @@ The first-pass risk calculation uses a Canada home-price proxy indexed to a base
 - Medium Risk: 30% to 40%
 - High Risk: above 40%
 
+## Run the Dashboard
+
+Run the first Shiny dashboard locally with:
+
+```bash
+Rscript -e "shiny::runApp('app', host='127.0.0.1', port=3838, launch.browser=FALSE)"
+```
+
+Then open:
+
+```text
+http://127.0.0.1:3838
+```
+
+The app includes an overview of historical indicators, a mortgage stress calculator, historical affordability risk views, and a preview of the analysis dataset.
+
 See `docs/data_sources.md` for source details and `docs/project_structure.md` for the folder layout.
