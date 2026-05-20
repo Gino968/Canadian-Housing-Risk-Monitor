@@ -9,6 +9,7 @@ from scripts.analysis.build_risk_indicators import (
     BASELINE_DOWN_PAYMENT_PERCENT,
     BASELINE_HOME_PRICE_CAD,
     calculate_monthly_payment,
+    classify_relative_pressure,
     classify_payment_to_income,
     build_indicators,
 )
@@ -51,6 +52,18 @@ def test_risk_classification_matches_documented_thresholds() -> None:
     assert levels.tolist() == ["Low Risk", "Medium Risk", "Medium Risk", "High Risk"]
 
 
+def test_relative_pressure_classification_splits_history_into_tertiles() -> None:
+    ratios = pd.Series([10, 20, 30, 40, 50, 60])
+
+    levels = classify_relative_pressure(ratios)
+
+    assert set(levels) == {
+        "Low Relative Pressure",
+        "Medium Relative Pressure",
+        "High Relative Pressure",
+    }
+
+
 def test_build_indicators_creates_expected_affordability_columns() -> None:
     master = pd.DataFrame(
         {
@@ -82,3 +95,5 @@ def test_build_indicators_creates_expected_affordability_columns() -> None:
     assert set(indicators["risk_level"].dropna().unique()).issubset(
         {"Low Risk", "Medium Risk", "High Risk"}
     )
+    assert "relative_risk_level" in indicators.columns
+    assert indicators["relative_risk_level"].notna().all()

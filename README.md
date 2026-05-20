@@ -18,7 +18,8 @@ Canadian Housing Risk Monitor is an interactive analytics platform that uses Can
 - Mortgage affordability calculator with custom house price, down payment, income, interest rate, and amortization inputs
 - Interest-rate shock scenarios for -0.5pp, +0.5pp, +1.0pp, and +2.0pp
 - Historical market risk proxy with highest, lowest, latest, and recent-month affordability readings
-- Data page with month-range and risk-level filters for reviewing previous records
+- Relative historical pressure levels that split the project history into low, medium, and high pressure periods
+- Data page with month-range and relative-pressure filters for reviewing previous records
 - Automated interpretation text that explains the latest risk reading and scenario impact
 
 ## Current Status
@@ -104,6 +105,8 @@ The first-pass risk calculation uses a Canada home-price proxy indexed to a base
 - Medium Risk: 30% to below 40%
 - High Risk: 40% and above
 
+Because the current proxy series remains above the absolute 40% threshold across its full history, the dashboard also calculates relative historical pressure bands. These split the available payment-to-income history into low, medium, and high thirds, making it easier to compare periods within an already-stressed affordability series.
+
 See `docs/methodology.md` for formulas, assumptions, and limitations.
 
 ## Tests
@@ -118,6 +121,7 @@ Current tests cover:
 
 - mortgage payment calculations, including 0% interest
 - documented risk threshold boundaries at 30% and 40%
+- relative historical pressure classification
 - dashboard-ready affordability indicator generation
 - annual income carry-forward logic
 - duplicate month validation and year-over-year calculations

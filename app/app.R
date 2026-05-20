@@ -67,6 +67,9 @@ risk_class <- function(level) {
     "Low Risk" = "risk-low",
     "Medium Risk" = "risk-medium",
     "High Risk" = "risk-high",
+    "Low Relative Pressure" = "risk-low",
+    "Medium Relative Pressure" = "risk-medium",
+    "High Relative Pressure" = "risk-high",
     "risk-unknown"
   )
 }
@@ -79,7 +82,8 @@ market_context <- function(row) {
     paste0(percent(row$cmhc_5yr_conventional_mortgage_rate_percent, 2), "."),
     "The implied monthly payment is", currency(row$monthly_mortgage_payment_canada_cad),
     "or", paste0(percent(row$payment_to_income_percent), " of monthly after-tax income,"),
-    "which places the baseline affordability proxy in", paste0(row$risk_level, ".")
+    "which places the baseline affordability proxy in", paste0(row$risk_level, " on the absolute rule,"),
+    "and", paste0(row$relative_risk_level, " compared with the project's history.")
   )
 }
 
@@ -87,7 +91,7 @@ shock_context <- function(row) {
   paste(
     "Under a +2 percentage point rate shock, the payment-to-income ratio rises to",
     paste0(percent(row$payment_to_income_plus_2_0pp_percent), ","),
-    "with the risk classification at", paste0(row$risk_level_plus_2_0pp, "."),
+    "with the absolute risk classification at", paste0(row$risk_level_plus_2_0pp, "."),
     "This calculator is a rule-based affordability measure, not a loan approval or price forecast model."
   )
 }
@@ -425,14 +429,14 @@ ui <- page_navbar(
         class = "status-strip",
         status_pill("Data range", data_range_label),
         status_pill("Latest month", latest_row$month),
-        status_pill("Current risk", latest_row$risk_level, risk_class(latest_row$risk_level))
+        status_pill("Relative pressure", latest_row$relative_risk_level, risk_class(latest_row$relative_risk_level))
       ),
       div(
         class = "metric-grid",
         metric_card("Proxy Canada Home Price", currency(latest_row$proxy_home_price_canada_cad), "Indexed to Dec. 2016 = 100"),
         metric_card("5-Year Mortgage Rate", percent(latest_row$cmhc_5yr_conventional_mortgage_rate_percent, 2), "CMHC conventional rate"),
         metric_card("Payment-to-Income", percent(latest_row$payment_to_income_percent), "Baseline monthly burden"),
-        metric_card("Risk Level", latest_row$risk_level, "+2pp scenario remains visible in Historical Risk", risk_class(latest_row$risk_level))
+        metric_card("Relative Pressure", latest_row$relative_risk_level, paste("Absolute rule:", latest_row$risk_level), risk_class(latest_row$relative_risk_level))
       ),
       div(
         class = "panel insight-panel",
@@ -541,7 +545,7 @@ ui <- page_navbar(
           class = "method-list",
           div("Monthly payment uses the standard fixed-rate mortgage amortization formula."),
           div("Historical home prices are index-based proxies, not observed transaction prices."),
-          div("Risk levels are rule-based affordability bands, not bank underwriting decisions.")
+          div("Absolute risk levels use fixed affordability bands; relative pressure compares each month with the project's own history.")
         ),
         br(),
         div(
@@ -558,8 +562,8 @@ ui <- page_navbar(
             ),
             selectInput(
               "risk_filter",
-              "Risk level",
-              choices = c("All", sort(unique(risk_data$risk_level))),
+              "Relative pressure",
+              choices = c("All", sort(unique(risk_data$relative_risk_level))),
               selected = "All"
             )
           )
@@ -571,7 +575,7 @@ ui <- page_navbar(
           paste(
             "Full dashboard-ready history:",
             paste0(data_range_label, "."),
-            "The current proxy risk classification is High Risk for all months because the lowest historical payment-to-income ratio is still above the 40% threshold."
+            "Absolute risk remains High Risk across the current proxy series, while relative pressure separates the history into low, medium, and high periods."
           )
         )
       )
@@ -701,7 +705,7 @@ server <- function(input, output, session) {
   })
 
   output$latest_shock_card <- renderUI({
-    metric_card("+2pp Shock Burden", percent(latest_row$payment_to_income_plus_2_0pp_percent), latest_row$risk_level_plus_2_0pp, risk_class(latest_row$risk_level_plus_2_0pp))
+    metric_card("+2pp Shock Burden", percent(latest_row$payment_to_income_plus_2_0pp_percent), latest_row$relative_risk_level_plus_2_0pp, risk_class(latest_row$relative_risk_level_plus_2_0pp))
   })
 
   output$latest_price_income_card <- renderUI({
@@ -729,8 +733,9 @@ server <- function(input, output, session) {
       `Mortgage Rate` = percent(recent$cmhc_5yr_conventional_mortgage_rate_percent, 2),
       `Monthly Payment` = currency(recent$monthly_mortgage_payment_canada_cad),
       `Payment-to-Income` = percent(recent$payment_to_income_percent),
-      Risk = recent$risk_level,
-      `+2pp Risk` = recent$risk_level_plus_2_0pp,
+      `Absolute Risk` = recent$risk_level,
+      `Relative Pressure` = recent$relative_risk_level,
+      `+2pp Relative` = recent$relative_risk_level_plus_2_0pp,
       check.names = FALSE
     )
   }, striped = TRUE, bordered = FALSE, spacing = "s")
@@ -741,7 +746,7 @@ server <- function(input, output, session) {
       df <- df[df$date >= input$history_dates[1] & df$date <= input$history_dates[2], ]
     }
     if (!is.null(input$risk_filter) && input$risk_filter != "All") {
-      df <- df[df$risk_level == input$risk_filter, ]
+      df <- df[df$relative_risk_level == input$risk_filter, ]
     }
     df
   })
@@ -784,7 +789,8 @@ server <- function(input, output, session) {
       `Price-to-Income` = paste0(round(preview$price_to_income_ratio_canada, 1), "x"),
       `Inflation YoY` = percent(preview$cpi_inflation_yoy_percent),
       `Unemployment` = percent(preview$unemployment_rate_percent),
-      Risk = preview$risk_level,
+      `Absolute Risk` = preview$risk_level,
+      `Relative Pressure` = preview$relative_risk_level,
       check.names = FALSE
     )
   }, striped = TRUE, bordered = FALSE, spacing = "s")

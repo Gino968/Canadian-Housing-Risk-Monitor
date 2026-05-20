@@ -43,6 +43,7 @@ This file powers the Shiny dashboard and preserves selected macro fields from th
 | `payment_to_income_percent` | Baseline monthly mortgage payment divided by monthly after-tax income |
 | `price_to_income_ratio_canada` | Canada proxy home price divided by annual after-tax income |
 | `risk_level` | Baseline risk band: Low below 30%, Medium from 30% to below 40%, High at 40% and above |
+| `relative_risk_level` | Within-series pressure band based on historical payment-to-income tertiles |
 | `monthly_payment_minus_0_5pp_cad` | Monthly payment under a -0.5 percentage point rate shock |
 | `monthly_payment_change_minus_0_5pp_cad` | Difference between the -0.5pp scenario payment and baseline payment |
 | `payment_to_income_minus_0_5pp_percent` | Payment-to-income ratio under the -0.5pp scenario |
@@ -56,6 +57,7 @@ This file powers the Shiny dashboard and preserves selected macro fields from th
 | `monthly_payment_change_plus_2_0pp_cad` | Difference between the +2.0pp scenario payment and baseline payment |
 | `payment_to_income_plus_2_0pp_percent` | Payment-to-income ratio under the +2.0pp scenario |
 | `risk_level_plus_2_0pp` | Risk band under the +2.0 percentage point rate shock |
+| `relative_risk_level_plus_2_0pp` | Within-series pressure band for the +2.0 percentage point rate shock |
 | `cpi_inflation_yoy_percent` | Year-over-year CPI inflation rate |
 | `unemployment_rate_percent` | Canada unemployment rate, seasonally adjusted |
 | `new_housing_price_index_canada_201612_100` | Canada new housing price index, total house and land, 2016-12 = 100 |

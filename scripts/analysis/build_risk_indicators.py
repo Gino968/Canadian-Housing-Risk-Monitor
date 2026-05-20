@@ -67,6 +67,18 @@ def classify_payment_to_income(payment_to_income_percent: pd.Series) -> pd.Serie
     ).astype("string")
 
 
+def classify_relative_pressure(payment_to_income_percent: pd.Series) -> pd.Series:
+    """Classify historical pressure using within-series tertiles."""
+    lower_threshold = payment_to_income_percent.quantile(1 / 3)
+    upper_threshold = payment_to_income_percent.quantile(2 / 3)
+    return pd.cut(
+        payment_to_income_percent,
+        bins=[-np.inf, lower_threshold, upper_threshold, np.inf],
+        labels=["Low Relative Pressure", "Medium Relative Pressure", "High Relative Pressure"],
+        include_lowest=True,
+    ).astype("string")
+
+
 def build_indicators(master: pd.DataFrame) -> pd.DataFrame:
     df = master.copy()
     df = df.dropna(
@@ -123,6 +135,10 @@ def build_indicators(master: pd.DataFrame) -> pd.DataFrame:
     df["risk_level_plus_2_0pp"] = classify_payment_to_income(
         df["payment_to_income_plus_2_0pp_percent"]
     )
+    df["relative_risk_level"] = classify_relative_pressure(df["payment_to_income_percent"])
+    df["relative_risk_level_plus_2_0pp"] = classify_relative_pressure(
+        df["payment_to_income_plus_2_0pp_percent"]
+    )
 
     ordered_columns = [
         "month",
@@ -138,6 +154,7 @@ def build_indicators(master: pd.DataFrame) -> pd.DataFrame:
         "payment_to_income_percent",
         "price_to_income_ratio_canada",
         "risk_level",
+        "relative_risk_level",
         "monthly_payment_minus_0_5pp_cad",
         "monthly_payment_change_minus_0_5pp_cad",
         "payment_to_income_minus_0_5pp_percent",
@@ -151,6 +168,7 @@ def build_indicators(master: pd.DataFrame) -> pd.DataFrame:
         "monthly_payment_change_plus_2_0pp_cad",
         "payment_to_income_plus_2_0pp_percent",
         "risk_level_plus_2_0pp",
+        "relative_risk_level_plus_2_0pp",
         "cpi_inflation_yoy_percent",
         "unemployment_rate_percent",
         "new_housing_price_index_canada_201612_100",
@@ -237,14 +255,17 @@ def write_summary(indicators: pd.DataFrame) -> None:
         f"CMHC 5-year mortgage rate: {latest['cmhc_5yr_conventional_mortgage_rate_percent']:.2f}%",
         f"Monthly mortgage payment: ${latest['monthly_mortgage_payment_canada_cad']:,.0f}",
         f"Payment-to-income ratio: {latest['payment_to_income_percent']:.1f}%",
-        f"Baseline risk level: {latest['risk_level']}",
+        f"Absolute risk level: {latest['risk_level']}",
+        f"Relative historical pressure: {latest['relative_risk_level']}",
         f"+2pp shock payment-to-income ratio: {latest['payment_to_income_plus_2_0pp_percent']:.1f}%",
-        f"+2pp shock risk level: {latest['risk_level_plus_2_0pp']}",
+        f"+2pp shock absolute risk level: {latest['risk_level_plus_2_0pp']}",
+        f"+2pp shock relative historical pressure: {latest['relative_risk_level_plus_2_0pp']}",
         "",
         "Assumptions:",
         f"- Baseline Canada home price proxy is ${BASELINE_HOME_PRICE_CAD:,.0f} when the housing price index equals {BASELINE_HOME_PRICE_INDEX}.",
         f"- Down payment is {BASELINE_DOWN_PAYMENT_PERCENT}% and amortization is {AMORTIZATION_YEARS} years.",
         "- Risk bands use monthly mortgage payment divided by monthly after-tax income: Low below 30%, Medium 30% to below 40%, High at 40% and above.",
+        "- Relative pressure bands split the available historical series into low, medium, and high thirds.",
     ]
     (PROCESSED_DIR / "housing_risk_analysis_summary.txt").write_text(
         "\n".join(summary) + "\n",

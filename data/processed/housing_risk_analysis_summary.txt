@@ -5,11 +5,14 @@ Proxy Canada home price: $847,700
 CMHC 5-year mortgage rate: 5.13%
 Monthly mortgage payment: $4,016
 Payment-to-income ratio: 63.8%
-Baseline risk level: High Risk
+Absolute risk level: High Risk
+Relative historical pressure: High Relative Pressure
 +2pp shock payment-to-income ratio: 77.1%
-+2pp shock risk level: High Risk
++2pp shock absolute risk level: High Risk
++2pp shock relative historical pressure: High Relative Pressure
 
 Assumptions:
 - Baseline Canada home price proxy is $700,000 when the housing price index equals 100.
 - Down payment is 20% and amortization is 25 years.
 - Risk bands use monthly mortgage payment divided by monthly after-tax income: Low below 30%, Medium 30% to below 40%, High at 40% and above.
+- Relative pressure bands split the available historical series into low, medium, and high thirds.

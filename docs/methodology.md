@@ -64,13 +64,23 @@ monthly after-tax income = annual after-tax income / 12
 
 ## Risk Classification
 
-The current dashboard uses simple affordability bands:
+The project keeps two risk views.
+
+The absolute affordability bands are:
 
 - Low Risk: payment-to-income below 30%
 - Medium Risk: payment-to-income from 30% to below 40%
 - High Risk: payment-to-income at 40% and above
 
 These thresholds are transparent portfolio assumptions. They are not official Canadian mortgage qualification rules.
+
+The dashboard also calculates relative historical pressure bands. These compare each month with the project's own historical payment-to-income series:
+
+- Low Relative Pressure: bottom third of the historical series
+- Medium Relative Pressure: middle third of the historical series
+- High Relative Pressure: top third of the historical series
+
+Relative pressure is useful because the current proxy assumptions put every historical month above the absolute 40% high-risk threshold. It should be read as a within-series comparison, not as a claim that low relative pressure is objectively affordable.
 
 ## Rate Shock Scenarios
 
