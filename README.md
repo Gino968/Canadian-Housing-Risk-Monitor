@@ -3,7 +3,7 @@ Canadian Housing Risk Monitor is an interactive analytics platform that uses Can
 
 ## Current Status
 
-The project is in the data foundation stage. The first project structure, official data download scripts, and initial cleaned master dataset have been created.
+The project has a reproducible data foundation and first analysis layer. Official data download scripts, cleaned master data, housing affordability risk indicators, and initial EDA figures have been created.
 
 ## First Data Pipeline
 
@@ -47,5 +47,30 @@ It currently contains monthly Canada housing and macroeconomic indicators from `
 - CMHC 5-year conventional mortgage lending rate
 - Bank of Canada policy rate
 - Annual median after-tax income with reference year
+
+## First Analysis Layer
+
+Build affordability risk indicators and first-pass EDA figures with:
+
+```bash
+.venv/bin/python scripts/analysis/build_risk_indicators.py
+```
+
+This writes:
+
+```text
+data/processed/housing_risk_indicators.csv
+data/processed/housing_risk_analysis_summary.txt
+outputs/figures/housing_price_index_canada_toronto.png
+outputs/figures/interest_rates.png
+outputs/figures/inflation_unemployment.png
+outputs/figures/payment_to_income_risk_proxy.png
+```
+
+The first-pass risk calculation uses a Canada home-price proxy indexed to a baseline home price, a 20% down payment, a 25-year amortization, and CMHC 5-year conventional mortgage rates. Risk bands are based on monthly mortgage payment divided by monthly after-tax income:
+
+- Low Risk: below 30%
+- Medium Risk: 30% to 40%
+- High Risk: above 40%
 
 See `docs/data_sources.md` for source details and `docs/project_structure.md` for the folder layout.
