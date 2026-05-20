@@ -1,6 +1,17 @@
 # Canadian-Housing-Risk-Monitor
 Canadian Housing Risk Monitor is an interactive analytics platform that uses Canadian housing and economic data to analyze mortgage affordability, housing market trends, and interest-rate risk through statistical modelling, scenario simulation, and data visualization.
 
+## Live Demo
+
+**Interactive dashboard:** [Canadian Housing Risk Monitor](https://ginoli.shinyapps.io/canadian-housing-risk-monitor/)
+
+## Tech Stack
+
+- **Python / pandas / NumPy:** official data ingestion, cleaning, merging, feature engineering, and dashboard-ready CSV generation
+- **matplotlib:** first-pass EDA figure generation
+- **R Shiny / bslib:** interactive dashboard, mortgage calculator, scenario simulation, and deployment UI
+- **Data sources:** Statistics Canada, CMHC mortgage rate data, Bank of Canada policy rate data
+
 ## Dashboard Features
 
 - Market overview with housing price indexes, mortgage rates, policy rates, CPI inflation, unemployment, and affordability pressure
@@ -15,6 +26,8 @@ Canadian Housing Risk Monitor is an interactive analytics platform that uses Can
 The project has a reproducible data foundation, first analysis layer, and working Shiny dashboard MVP. Official data download scripts, cleaned master data, housing affordability risk indicators, EDA figures, and interactive dashboard views have been created.
 
 ## First Data Pipeline
+
+The data pipeline is built in Python with **pandas**. It reads official source files, standardizes dates and numeric fields, filters the relevant Canadian macro and housing series, merges monthly indicators, and writes analysis-ready CSV files for the dashboard.
 
 Install Python dependencies with:
 
