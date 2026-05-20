@@ -22,13 +22,17 @@ The first reproducible path is:
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python scripts/data_collection/download_data.py
-.venv/bin/python scripts/data_cleaning/build_master_dataset.py
-.venv/bin/python scripts/analysis/build_risk_indicators.py
+.venv/bin/python scripts/run_pipeline.py
 ```
 
-`download_data.py` uses cached files by default. Add `--force` when you want to refresh all raw files from the official sources.
+`scripts/run_pipeline.py` uses cached raw files by default through the download script, rebuilds processed data, rebuilds indicators and figures, and copies `housing_risk_indicators.csv` into `app/data/` for the Shiny dashboard. Add `--force-download` when you want to refresh all raw files from the official sources, or `--skip-download` when you want to rebuild from existing raw files only.
 
 The first analysis script writes `data/processed/housing_risk_indicators.csv`, a short summary text file, and chart images in `outputs/figures/`.
+
+Run the Python test suite with:
+
+```bash
+.venv/bin/python -m pytest
+```
 
 See `docs/methodology.md` for the mortgage formulas, risk thresholds, assumptions, and current limitations.

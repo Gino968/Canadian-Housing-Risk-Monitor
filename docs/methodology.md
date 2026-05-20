@@ -67,8 +67,8 @@ monthly after-tax income = annual after-tax income / 12
 The current dashboard uses simple affordability bands:
 
 - Low Risk: payment-to-income below 30%
-- Medium Risk: payment-to-income from 30% to 40%
-- High Risk: payment-to-income above 40%
+- Medium Risk: payment-to-income from 30% to below 40%
+- High Risk: payment-to-income at 40% and above
 
 These thresholds are transparent portfolio assumptions. They are not official Canadian mortgage qualification rules.
 

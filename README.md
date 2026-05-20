@@ -41,6 +41,7 @@ Run the first-pass data pipeline with:
 ```bash
 .venv/bin/python scripts/data_collection/download_data.py
 .venv/bin/python scripts/data_cleaning/build_master_dataset.py
+.venv/bin/python scripts/analysis/build_risk_indicators.py
 ```
 
 By default, `download_data.py` reuses files that already exist in `data/raw`, so normal runs are faster and do not repeatedly hit the official websites. To force a fresh download, run:
@@ -48,6 +49,14 @@ By default, `download_data.py` reuses files that already exist in `data/raw`, so
 ```bash
 .venv/bin/python scripts/data_collection/download_data.py --force
 ```
+
+You can also run the local pipeline and sync the dashboard CSV in one command:
+
+```bash
+.venv/bin/python scripts/run_pipeline.py
+```
+
+Use `--skip-download` when you only want to rebuild outputs from existing raw files, or `--force-download` when you want to refresh official source files first.
 
 The main analysis-ready file is:
 
@@ -92,10 +101,27 @@ outputs/figures/payment_to_income_risk_proxy.png
 The first-pass risk calculation uses a Canada home-price proxy indexed to a baseline home price, a 20% down payment, a 25-year amortization, and CMHC 5-year conventional mortgage rates. Risk bands are based on monthly mortgage payment divided by monthly after-tax income:
 
 - Low Risk: below 30%
-- Medium Risk: 30% to 40%
-- High Risk: above 40%
+- Medium Risk: 30% to below 40%
+- High Risk: 40% and above
 
 See `docs/methodology.md` for formulas, assumptions, and limitations.
+
+## Tests
+
+The Python data and indicator logic is covered by focused `pytest` tests. Run them with:
+
+```bash
+.venv/bin/python -m pytest
+```
+
+Current tests cover:
+
+- mortgage payment calculations, including 0% interest
+- documented risk threshold boundaries at 30% and 40%
+- dashboard-ready affordability indicator generation
+- annual income carry-forward logic
+- duplicate month validation and year-over-year calculations
+- Statistics Canada zip member resolution
 
 ## Run the Dashboard
 
@@ -130,8 +156,8 @@ The monthly mortgage payment uses the standard fixed-rate amortization formula. 
 The risk levels are transparent rule-based bands, not bank underwriting decisions:
 
 - Low Risk: payment-to-income below 30%
-- Medium Risk: payment-to-income from 30% to 40%
-- High Risk: payment-to-income above 40%
+- Medium Risk: payment-to-income from 30% to below 40%
+- High Risk: payment-to-income at 40% and above
 
 ## Current Limitations
 

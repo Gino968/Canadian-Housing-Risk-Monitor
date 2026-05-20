@@ -483,7 +483,7 @@ ui <- page_navbar(
             h4("Rate Shock Scenarios"),
             div(class = "table-wrap", tableOutput("shock_table")),
             uiOutput("calc_interpretation"),
-            div(class = "note", "Risk bands use monthly mortgage payment divided by monthly after-tax income: Low < 30%, Medium 30-40%, High > 40%.")
+            div(class = "note", "Risk bands use monthly mortgage payment divided by monthly after-tax income: Low < 30%, Medium 30% to < 40%, High >= 40%.")
           )
         )
       )
@@ -555,6 +555,12 @@ ui <- page_navbar(
               min = min(risk_data$date),
               max = max(risk_data$date),
               format = "yyyy-mm"
+            ),
+            selectInput(
+              "risk_filter",
+              "Risk level",
+              choices = c("All", sort(unique(risk_data$risk_level))),
+              selected = "All"
             )
           )
         ),
@@ -733,6 +739,9 @@ server <- function(input, output, session) {
     df <- risk_data
     if (!is.null(input$history_dates) && all(!is.na(input$history_dates))) {
       df <- df[df$date >= input$history_dates[1] & df$date <= input$history_dates[2], ]
+    }
+    if (!is.null(input$risk_filter) && input$risk_filter != "All") {
+      df <- df[df$risk_level == input$risk_filter, ]
     }
     df
   })

@@ -12,4 +12,4 @@ Baseline risk level: High Risk
 Assumptions:
 - Baseline Canada home price proxy is $700,000 when the housing price index equals 100.
 - Down payment is 20% and amortization is 25 years.
-- Risk bands use monthly mortgage payment divided by monthly after-tax income: Low below 30%, Medium 30-40%, High above 40%.
+- Risk bands use monthly mortgage payment divided by monthly after-tax income: Low below 30%, Medium 30% to below 40%, High at 40% and above.

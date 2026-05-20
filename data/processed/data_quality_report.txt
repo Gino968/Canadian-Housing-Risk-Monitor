@@ -1,5 +1,5 @@
 Canadian Housing Risk Monitor data quality report
-Generated at: 2026-05-19T20:57:28
+Generated at: 2026-05-20T02:27:11
 
 Dataset ranges:
 - cpi_canada: 1,348 rows, 1914-01 to 2026-04

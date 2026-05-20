@@ -46,6 +46,8 @@ def calculate_monthly_payment(
     monthly_rate = annual_rate_percent / 100 / 12
     number_of_payments = amortization_years * 12
     zero_rate_payment = principal / number_of_payments
+    if np.isscalar(monthly_rate) and monthly_rate == 0:
+        return zero_rate_payment
     amortized_payment = (
         principal
         * monthly_rate
@@ -61,6 +63,7 @@ def classify_payment_to_income(payment_to_income_percent: pd.Series) -> pd.Serie
         payment_to_income_percent,
         bins=[-np.inf, 30, 40, np.inf],
         labels=["Low Risk", "Medium Risk", "High Risk"],
+        right=False,
     ).astype("string")
 
 
@@ -241,7 +244,7 @@ def write_summary(indicators: pd.DataFrame) -> None:
         "Assumptions:",
         f"- Baseline Canada home price proxy is ${BASELINE_HOME_PRICE_CAD:,.0f} when the housing price index equals {BASELINE_HOME_PRICE_INDEX}.",
         f"- Down payment is {BASELINE_DOWN_PAYMENT_PERCENT}% and amortization is {AMORTIZATION_YEARS} years.",
-        "- Risk bands use monthly mortgage payment divided by monthly after-tax income: Low below 30%, Medium 30-40%, High above 40%.",
+        "- Risk bands use monthly mortgage payment divided by monthly after-tax income: Low below 30%, Medium 30% to below 40%, High at 40% and above.",
     ]
     (PROCESSED_DIR / "housing_risk_analysis_summary.txt").write_text(
         "\n".join(summary) + "\n",
