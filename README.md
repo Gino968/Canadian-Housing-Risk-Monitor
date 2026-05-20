@@ -117,6 +117,14 @@ The Python data and indicator logic is covered by focused `pytest` tests. Run th
 .venv/bin/python -m pytest
 ```
 
+In VS Code, open the project folder itself, not its parent folder:
+
+```text
+/Users/gino/Documents/project/Canadian-Housing-Risk-Monitor
+```
+
+The workspace settings point VS Code to `.venv/bin/python` and configure pytest to run from the project root.
+
 Current tests cover:
 
 - mortgage payment calculations, including 0% interest
